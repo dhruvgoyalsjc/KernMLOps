@@ -27,3 +27,4 @@ collector_config:
       - madvise
       - perf
       - unmap_range
+      - vfs_read

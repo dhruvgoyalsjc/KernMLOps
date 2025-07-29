@@ -21,6 +21,7 @@ from data_schema.schema import (
     collection_id_column,
     cumulative_pma_as_pdf,
 )
+from data_schema.vfs_read import VFSReadDataTable
 
 table_types: list[type[CollectionTable]] = [
     SystemInfoTable,
@@ -33,6 +34,7 @@ table_types: list[type[CollectionTable]] = [
     BlockIOQueueTable,
     BlockIOTable,
     CollapseHugePageDataTable,
+    VFSReadDataTable,
 ] + list(perf.perf_table_types.values())
 
 def demote(user_id: int | None = None, group_id: int | None = None) -> Callable[[], None]:
@@ -82,4 +84,5 @@ __all__ = [
     "CollectionGraph",
     "GraphEngine",
     "SystemInfoTable",
+    "VFSReadDataTable",
 ]
