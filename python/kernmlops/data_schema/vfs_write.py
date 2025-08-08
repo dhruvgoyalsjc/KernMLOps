@@ -18,6 +18,8 @@ class VFSWriteDataTable(CollectionTable):
             "count": pl.Int64(),
             "buf": pl.Int64(),
             "ret": pl.Int64(),
+            "has_write": pl.Int64(),
+            "has_write_iter": pl.Int64(),
             "which_write": pl.Int64(),  # 1 = .write, 2 = .write_iter
             "success": pl.Int64(),      # 1 = write succeeded, 0 = failed
             "ts_ns": pl.Int64(),

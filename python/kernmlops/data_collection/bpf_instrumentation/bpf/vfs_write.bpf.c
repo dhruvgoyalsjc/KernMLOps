@@ -9,8 +9,10 @@ typedef struct vfs_write_event {
   u64 count;
   void* buf;
   s64 ret;
-  u8 which_write; // 1 = .write, 2 = .write_iter
-  u8 success;     // 1 = successful write (ret > 0)
+  u8 has_write;      // for verifying o/p of which_write
+  u8 has_write_iter; // for verifying o/p of which_write
+  u8 which_write;    // 1 = .write, 2 = .write_iter
+  u8 success;        // 1 = successful write (ret > 0)
   u64 ts_ns;
 } vfs_write_event_t;
 
@@ -51,6 +53,15 @@ int trace_vfs_write_entry(struct pt_regs* ctx, struct file* file, char __user* b
 
   // Timestamp the start of the syscall
   event.ts_ns = bpf_ktime_get_ns();
+
+  // Check file->f_op->write and file->f_op->write_iter (sanity verification)
+  if (file && file->f_op) {
+    event.has_write = (file->f_op->write != NULL);
+    event.has_write_iter = (file->f_op->write_iter != NULL);
+  } else {
+    event.has_write = 0;
+    event.has_write_iter = 0;
+  }
 
   write_ctx.update(&id, &event);
   return 0;

@@ -18,6 +18,8 @@ class VFSWriteEvent:
     count: int
     buf: int
     ret: int
+    has_write: int
+    has_write_iter: int
     which_write: int
     success: int
     ts_ns: int
@@ -80,6 +82,8 @@ class VFSWriteBPFHook(BPFProgram):
                 count=event.count,
                 buf=int(event.buf),
                 ret=event.ret,
+                has_write=event.has_write,
+                has_write_iter=event.has_write_iter,
                 which_write=event.which_write,
                 success=event.success,
                 ts_ns=event.ts_ns,

@@ -6,7 +6,7 @@ from bcc import BPF
 from data_collection.bpf_instrumentation.bpf_hook import POLL_TIMEOUT_MS, BPFProgram
 from data_schema import CollectionTable
 from data_schema.vfs_read import (
-    VFSReadDataTable,  # You must define this schema separately
+    VFSReadDataTable,  # We defined this schema separately
 )
 
 
@@ -18,6 +18,8 @@ class VFSReadEvent:
     count: int
     buf: int
     ret: int
+    has_read: int
+    has_read_iter: int
     which_read: int
     success: int
     ts_ns: int
@@ -80,6 +82,8 @@ class VFSReadBPFHook(BPFProgram):
                 count=event.count,
                 buf=int(event.buf),
                 ret=event.ret,
+                has_read=event.has_read,
+                has_read_iter=event.has_read_iter,
                 which_read=event.which_read,
                 success=event.success,
                 ts_ns=event.ts_ns,

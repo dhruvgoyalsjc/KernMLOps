@@ -18,6 +18,8 @@ class VFSReadDataTable(CollectionTable):
             "count": pl.Int64(),
             "buf": pl.Int64(),
             "ret": pl.Int64(),
+            "has_read": pl.Int64(),
+            "has_read_iter": pl.Int64(),
             "which_read": pl.Int64(),  # 1 = .read, 2 = .read_iter
             "success": pl.Int64(),     # 1 = read succeeded, 0 = failed
             "ts_ns": pl.Int64(),

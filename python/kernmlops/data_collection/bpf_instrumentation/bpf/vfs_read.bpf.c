@@ -9,8 +9,10 @@ typedef struct vfs_read_event {
   u64 count;
   void* buf;
   s64 ret;
-  u8 which_read; // 1 = .read, 2 = .read_iter
-  u8 success;    // 1 = successful read
+  u8 has_read;      // for verifying o/p of which_read
+  u8 has_read_iter; // for verifying o/p of which_read
+  u8 which_read;    // 1 = .read, 2 = .read_iter
+  u8 success;       // 1 = successful read
   u64 ts_ns;
 } vfs_read_event_t;
 
@@ -51,6 +53,18 @@ int trace_vfs_read_entry(struct pt_regs* ctx, struct file* file, char __user* bu
 
   // Timestamp the start of the syscall
   event.ts_ns = bpf_ktime_get_ns();
+
+  event.has_read = 0;
+  event.has_read_iter = 0;
+
+  // Check file->f_op->read and file->f_op->read_iter (sanity verification)
+  if (file && file->f_op) {
+    event.has_read = (file->f_op->read != NULL);
+    event.has_read_iter = (file->f_op->read_iter != NULL);
+  } else {
+    event.has_read = 0;
+    event.has_read_iter = 0;
+  }
 
   read_ctx.update(&id, &event);
   return 0;
