@@ -45,3 +45,4 @@ collector_config:
       - process_trace
       - zswap_runtime
       - vfs_read
+      - vfs_write

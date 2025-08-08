@@ -5,48 +5,48 @@ import polars as pl
 from bcc import BPF
 from data_collection.bpf_instrumentation.bpf_hook import POLL_TIMEOUT_MS, BPFProgram
 from data_schema import CollectionTable
-from data_schema.vfs_read import (
-    VFSReadDataTable,  # You must define this schema separately
+from data_schema.vfs_write import (
+    VFSWriteDataTable,  # You must define this schema separately
 )
 
 
 @dataclass(frozen=True)
-class VFSReadEvent:
+class VFSWriteEvent:
     pid: int
     tgid: int
     comm: str
     count: int
     buf: int
     ret: int
-    which_read: int
+    which_write: int
     success: int
     ts_ns: int
 
-class VFSReadBPFHook(BPFProgram):
+class VFSWriteBPFHook(BPFProgram):
 
     @classmethod
     def name(cls) -> str:
-        return "vfs_read"
+        return "vfs_write"
 
     def __init__(self):
-        self.bpf_text = open(Path(__file__).parent / "bpf/vfs_read.bpf.c", "r").read()
-        self.trace_process: list[VFSReadEvent] = []
+        self.bpf_text = open(Path(__file__).parent / "bpf/vfs_write.bpf.c", "r").read()
+        self.trace_process: list[VFSWriteEvent] = []
 
     def load(self, collection_id: str):
         self.collection_id = collection_id
         self.bpf = BPF(text=self.bpf_text)
 
-        # Match updated function names from vfs_read.bpf.c
-        self.bpf.attach_kprobe(event=b"vfs_read", fn_name=b"trace_vfs_read_entry")
-        self.bpf.attach_kretprobe(event=b"vfs_read", fn_name=b"trace_vfs_read_return")
+        # Attach entry + return to vfs_write
+        self.bpf.attach_kprobe(event=b"vfs_write", fn_name=b"trace_vfs_write_entry")
+        self.bpf.attach_kretprobe(event=b"vfs_write", fn_name=b"trace_vfs_write_return")
 
-        self.bpf.attach_kprobe(event=b"vfs_read+0xaf", fn_name=b"trace_read_branch")
-        self.bpf.attach_kprobe(event=b"vfs_read+0x208", fn_name=b"trace_read_iter_branch")
-        self.bpf.attach_kprobe(event=b"vfs_read+0x310", fn_name=b"trace_read_iter_branch")
-        self.bpf.attach_kprobe(event=b"vfs_read+0x11d", fn_name=b"trace_add_rchar")
+        # NEED TO STILL FIND OFFSETS
+        self.bpf.attach_kprobe(event=b"vfs_write+0xfd", fn_name=b"trace_write_branch")
+        self.bpf.attach_kprobe(event=b"vfs_write+0x24f", fn_name=b"trace_write_iter_branch")
+        self.bpf.attach_kprobe(event=b"vfs_write+0x392", fn_name=b"trace_write_iter_branch")
+        self.bpf.attach_kprobe(event=b"vfs_write+0x2e7", fn_name=b"trace_add_wchar")
 
-
-        self.bpf["vfs_read_events"].open_perf_buffer(self.vfs_read_eh, page_cnt=128)
+        self.bpf["vfs_write_events"].open_perf_buffer(self.vfs_write_eh, page_cnt=128)
 
     def poll(self):
         self.bpf.perf_buffer_poll(timeout=POLL_TIMEOUT_MS)
@@ -56,7 +56,7 @@ class VFSReadBPFHook(BPFProgram):
 
     def data(self) -> list[CollectionTable]:
         return [
-            VFSReadDataTable.from_df_id(
+            VFSWriteDataTable.from_df_id(
                 pl.DataFrame(self.trace_process),
                 collection_id=self.collection_id,
             )
@@ -70,17 +70,17 @@ class VFSReadBPFHook(BPFProgram):
         self.clear()
         return tables
 
-    def vfs_read_eh(self, cpu, data, size):
-        event = self.bpf["vfs_read_events"].event(data)
+    def vfs_write_eh(self, cpu, data, size):
+        event = self.bpf["vfs_write_events"].event(data)
         self.trace_process.append(
-            VFSReadEvent(
+            VFSWriteEvent(
                 pid=event.pid,
                 tgid=event.tgid,
                 comm=event.comm.decode("utf-8", "replace").rstrip("\x00"),
                 count=event.count,
                 buf=int(event.buf),
                 ret=event.ret,
-                which_read=event.which_read,
+                which_write=event.which_write,
                 success=event.success,
                 ts_ns=event.ts_ns,
             )

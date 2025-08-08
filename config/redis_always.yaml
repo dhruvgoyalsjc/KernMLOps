@@ -28,3 +28,4 @@ collector_config:
       - perf
       - unmap_range
       - vfs_read
+      - vfs_write

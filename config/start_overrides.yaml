@@ -21,3 +21,4 @@ collector_config:
       - block_io
       - perf
       - vfs_read
+      - vfs_write
