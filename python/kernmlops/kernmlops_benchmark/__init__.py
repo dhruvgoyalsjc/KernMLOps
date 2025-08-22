@@ -18,6 +18,7 @@ from kernmlops_benchmark.linnos import LinnosBenchmark
 from kernmlops_benchmark.linux_build import LinuxBuildBenchmark
 from kernmlops_benchmark.memcached import MemcachedBenchmark
 from kernmlops_benchmark.mongodb import MongoDbBenchmark
+from kernmlops_benchmark.postgresql import PostgresqlBenchmark
 from kernmlops_benchmark.redis import RedisBenchmark
 from kernmlops_config import ConfigBase
 
@@ -29,6 +30,7 @@ benchmarks: Mapping[str, type[Benchmark]] = {
     LinnosBenchmark.name(): LinnosBenchmark,
     RedisBenchmark.name(): RedisBenchmark,
     MemcachedBenchmark.name(): MemcachedBenchmark,
+    PostgresqlBenchmark.name(): PostgresqlBenchmark,
     FioBenchmark.name(): FioBenchmark
 }
 

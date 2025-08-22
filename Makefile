@@ -261,6 +261,16 @@ benchmark-fio: install-fio
  	  -c ${KERNMLOPS_CONFIG_FILE} \
  	  --benchmark fio
 
+install-postgresql:
+	@echo "Installing PostgreSQL workload..."
+	@bash scripts/setup-benchmarks/install-postgresql.sh
+
+benchmark-postgresql: install-postgresql
+	@echo "Collecting data for PostgreSQL..."
+	@python -m kernmlops collect -v \
+		-c ${KERNMLOPS_CONFIG_FILE} \
+		--benchmark postgresql
+
 setup-mongodb:
 	@echo "Setting up storage for mongodb benchmark..."
 	@source scripts/setup-benchmarks/setup-mongodb.sh
