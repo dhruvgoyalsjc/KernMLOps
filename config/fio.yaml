@@ -1,0 +1,23 @@
+---
+benchmark_config:
+  generic:
+    benchmark: fio
+  fio:
+    ioengine: "sync"
+    blocksize: "4k"
+    size: "10G" # make 15G
+    numjobs: 8 # make 8
+    filename: "fio-testfile"
+    runtime: 60 # make 300
+    direct: true
+collector_config:
+  generic:
+    poll_rate: 0.1
+    output_dir: data
+    output_graphs: false
+    hooks:
+      - vfs_read
+      - vfs_write
+      - process_trace
+      - system_info
+      - file_data
